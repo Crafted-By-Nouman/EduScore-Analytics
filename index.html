@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      EduScore Analytics | Your Personal Companion for Smarter Result Tracking
+    </title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div>
+          <h1>EduScore Analytics</h1>
+          <p class="subtitle">
+            Your Personal Companion for Smarter Result Tracking
+          </p>
+        </div>
+        <div class="theme-toggle">
+          <span>Dark Mode</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="themeToggle" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </header>
+
+      <main>
+        <div class="card">
+          <div class="subject-controls">
+            <h2>Subject Management</h2>
+            <div>
+              <button id="printResults" class="btn">
+                <i class="fas fa-print"></i> Print
+              </button>
+              <button id="saveResults" class="btn">
+                <i class="fas fa-save"></i> Save Results
+              </button>
+            </div>
+          </div>
+
+          <div class="subject-table-container">
+            <table class="subject-table" id="subjectTable">
+              <thead>
+                <tr>
+                  <th>Subject</th>
+                  <th>Obtained Marks</th>
+                  <th>Total Marks</th>
+                  <th>
+                    Percentage
+                    <span class="tooltip"
+                      ><i class="fas fa-info-circle"></i
+                      ><span class="tooltiptext"
+                        >Calculated as (Obtained / Total) * 100</span
+                      ></span
+                    >
+                  </th>
+                  <th>
+                    Grade
+                    <span class="tooltip"
+                      ><i class="fas fa-info-circle"></i
+                      ><span class="tooltiptext"
+                        >A: 90-100%, B: 80-89%, C: 70-79%, D: 60-69%, E: 50-59%,
+                        F: Below 50%</span
+                      ></span
+                    >
+                  </th>
+                  <th>
+                    Status
+                    <span class="tooltip"
+                      ><i class="fas fa-info-circle"></i
+                      ><span class="tooltiptext"
+                        >Passing threshold: 33% (customizable)</span
+                      ></span
+                    >
+                  </th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="subjectTableBody">
+                <!-- Subjects will be added here dynamically -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="threshold-control">
+            <span>
+              <label for="passingThreshold"
+                ><i class="fas fa-check-circle"></i> Passing Threshold
+                (%):</label
+              >
+              <input
+                type="number"
+                id="passingThreshold"
+                min="0"
+                max="100"
+                value="33"
+                class="input-field"
+                style="width: 80px" />
+            </span>
+            <span>
+              <button id="addSubject" class="btn btn-secondary">
+                <i class="fas fa-plus"></i> Add Subject
+              </button>
+              <button id="loadResults" class="btn">
+                <i class="fas fa-folder-open"></i> Load Results
+              </button>
+              <button id="removeAllSubjects" class="btn btn-danger">
+                <i class="fas fa-trash"></i> Clear All
+              </button></span
+            >
+          </div>
+        </div>
+
+        <div class="card" id="resultsCard" style="display: none">
+          <h2>Results Summary</h2>
+          <div class="results-summary">
+            <div class="summary-card">
+              <h3>Total Marks</h3>
+              <div class="value" id="totalMarks">0</div>
+              <div class="label">out of <span id="totalMaxMarks">0</span></div>
+            </div>
+            <div class="summary-card">
+              <h3>Overall Percentage</h3>
+              <div class="value" id="overallPercentage">0%</div>
+              <div class="label">across all subjects</div>
+            </div>
+            <div class="summary-card">
+              <h3>Cumulative Grade</h3>
+              <div class="value" id="cumulativeGrade">-</div>
+              <div class="label">based on average</div>
+            </div>
+            <div class="summary-card">
+              <h3>Overall Status</h3>
+              <div class="value" id="overallStatus">-</div>
+              <div class="label">pass/fail status</div>
+            </div>
+          </div>
+
+          <div class="motivation" id="motivationMessage">
+            <i
+              class="fas fa-quote-left"
+              style="opacity: 0.5; margin-right: 5px"></i>
+            Enter your marks to see your results and motivational message!
+            <i
+              class="fas fa-quote-right"
+              style="opacity: 0.5; margin-left: 5px"></i>
+          </div>
+
+          <div class="chart-container">
+            <canvas id="performanceChart"></canvas>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Floating Action Button for Adding Subjects -->
+    <!-- <button class="fab" id="fabAddSubject" title="Add Subject">
+      <i class="fas fa-plus"></i>
+    </button> -->
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+      <i class="fas fa-check-circle toast-icon"></i>
+      <span class="toast-message">Notification message</span>
+    </div>
+
+    <div class="loading" id="loadingIndicator">
+      <div class="loading-spinner"></div>
+    </div>
+
+    <div class="popup-overlay" id="popupModal">
+      <div class="popup-modal">
+        <h2>Welcome to Result Calculator</h2>
+        <p>This experience is best viewed on desktop or large screens.</p>
+        <button onclick="closeModal()">Close</button>
+      </div>
+    </div>
+
+    <canvas id="confetti-canvas" style="display: none"></canvas>
+
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="./script.js"></script>
+  </body>
+</html>
